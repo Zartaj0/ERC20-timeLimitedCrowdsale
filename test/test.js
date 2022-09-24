@@ -4,123 +4,96 @@ let provider = ethers.getDefaultProvider();
 
 
 describe("Token contract", function () {
+    let owner ;
+    let buyer ;
+    let buyer1 ;
+    let buyer2 ;
+    let Token ;
+    let token ;
+    let Crowdsale ;
+    let crowdsale ;
+
+    beforeEach(async function () {
+         [owner, buyer,buyer1,buyer2,] = await ethers.getSigners();
+         Token = await ethers.getContractFactory("Token");
+         token = await Token.deploy();
+         Crowdsale = await ethers.getContractFactory("Crowdsale");
+         crowdsale = await Crowdsale.deploy();
+         token.approveContract(crowdsale.address);
+         crowdsale.setTokenAddress(token.address);
+         crowdsale.setStart();
+    })
+
     it("Deployment should assign the total supply of tokens to itself", async function () {
-        const [owner,buyer,buyer1] = await ethers.getSigners();
-        console.log(owner.address)
-
-        const Token = await ethers.getContractFactory("Token");
-
-        const token = await Token.deploy();
 
         const contractBalance = await token.balanceOf(token.address);
         expect(await token.totalSupply()).to.equal(contractBalance);
     });
 
-    // it("buyer can buy the token", async function () {
-    //     const [owner, buyer] = await ethers.getSigners();
-    //     const Crowdsale = await ethers.getContractFactory("Crowdsale");
-    //     const crowdsale = await Crowdsale.deploy();
+    it("buyer can buy the token", async function () {
+       
+        await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") })
+        expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000")
+    })
 
-    //     const Token = await ethers.getContractFactory("Token");
-    //     const token = await Token.deploy();
+    it("Prices should change accoording to time", async function () {
 
-    //     await crowdsale.setTokenAddress(token.address);
-    //     await token.approveContract(crowdsale.address);
-    //     await crowdsale.setStart();
+        await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
+        expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000");
 
-    //     await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") })
-    //     expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000")
-    // })
+        await network.provider.send("evm_increaseTime", [240]);
+        await crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("1") });
+        expect(await token.balanceOf(buyer1.address)).to.equal("500000000000000000000");
 
-    // it("Prices should change accoording to time", async function () {
-    //     const [owner, buyer,buyer1,buyer2,] = await ethers.getSigners();
-    //     const Crowdsale = await ethers.getContractFactory("Crowdsale");
-    //     const crowdsale = await Crowdsale.deploy();
+        await network.provider.send("evm_increaseTime", [240]);
+        await crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1") });
+        expect(await token.balanceOf(buyer2.address)).to.equal("200000000000000000000");
 
-    //     const Token = await ethers.getContractFactory("Token");
-    //     const token = await Token.deploy();
-
-    //     await crowdsale.setTokenAddress(token.address);
-    //     await token.approveContract(crowdsale.address);
-    //     await crowdsale.setStart();
-
-    //     await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
-    //     expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000");
-
-    //     await network.provider.send("evm_increaseTime", [240]);
-    //     await crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("1") });
-    //     expect(await token.balanceOf(buyer1.address)).to.equal("500000000000000000000");
-
-    //     await network.provider.send("evm_increaseTime", [240]);
-    //     await crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1") });
-    //     expect(await token.balanceOf(buyer2.address)).to.equal("200000000000000000000");
-
-    //     await network.provider.send("evm_increaseTime", [240])
+        await network.provider.send("evm_increaseTime", [240])
         
-    //     await expect(crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1")})).to.eventually.be.rejected;
+        await expect(crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1")})).to.eventually.be.rejected;
 
-    // })
+    })
 
-    // it("owner should be able to withdraw ether only after sale is over",async function(){
-    //     const [owner, buyer,buyer1,buyer2,] = await  ethers.getSigners();
+    it("owner should be able to withdraw ether only after sale is over",async function(){
 
-    //     const Crowdsale = await ethers.getContractFactory("Crowdsale");
-    //     const crowdsale = await Crowdsale.deploy();
+        await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
 
-    //     const Token = await ethers.getContractFactory("Token");
-    //     const token = await Token.deploy();
+        await network.provider.send("evm_increaseTime", [240]);
+        await crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("1") });
 
-    //     await crowdsale.setTokenAddress(token.address);
-    //     await token.approveContract(crowdsale.address);
-    //     await crowdsale.setStart();
-
-    //     await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
-
-    //     await network.provider.send("evm_increaseTime", [240]);
-    //     await crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("1") });
-
-    //     await network.provider.send("evm_increaseTime", [240]);
-    //     await crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1") });
+        await network.provider.send("evm_increaseTime", [240]);
+        await crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1") });
 
 
-    //     await expect( crowdsale.transferFundsToOwner(owner.address)).to.eventually.be.rejected;
+        await expect( crowdsale.transferFundsToOwner(owner.address)).to.eventually.be.rejected;
 
 
-    //     await network.provider.send("evm_increaseTime", [240])
+        await network.provider.send("evm_increaseTime", [240])
 
-    //     await expect( crowdsale.transferFundsToOwner(owner.address)).to.eventually.be.fulfilled;
-    //     await  crowdsale.transferFundsToOwner(owner.address);
+        await expect( crowdsale.transferFundsToOwner(owner.address)).to.eventually.be.fulfilled;
+        await  crowdsale.transferFundsToOwner(owner.address);
 
-    // })
+    })
 
-    // it("owner should withdraw the tokens only when sale is closed", async function(){
-    //     const [owner, buyer] = await ethers.getSigners();
-    //     const Crowdsale = await ethers.getContractFactory("Crowdsale");
-    //     const crowdsale = await Crowdsale.deploy();
+    it("owner should withdraw the tokens only when sale is closed", async function(){
 
-    //     const Token = await ethers.getContractFactory("Token");
-    //     const token = await Token.deploy();
+        await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
+        expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000");
 
-    //     await crowdsale.setTokenAddress(token.address);
-    //     await token.approveContract(crowdsale.address);
-    //     await crowdsale.setStart();
+        await network.provider.send("evm_increaseTime", [240]);
+        await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
+        expect(await token.balanceOf(buyer.address)).to.equal("1500000000000000000000");
 
-    //     await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
-    //     expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000");
+        await network.provider.send("evm_increaseTime", [240]);
+        await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
+        expect(await token.balanceOf(buyer.address)).to.equal("1700000000000000000000");
+        await expect(crowdsale.withdrawRemainingTokens(owner.address)).to.be.rejectedWith("The remaining tokens are only transferrable after the sale is over" );
 
-    //     await network.provider.send("evm_increaseTime", [240]);
-    //     await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
-    //     expect(await token.balanceOf(buyer.address)).to.equal("1500000000000000000000");
+        await network.provider.send("evm_increaseTime", [240])
+        await expect( crowdsale.withdrawRemainingTokens(owner.address)).to.be.fulfilled;
 
-    //     await network.provider.send("evm_increaseTime", [240]);
-    //     await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") });
-    //     expect(await token.balanceOf(buyer.address)).to.equal("1700000000000000000000");
-    //     await expect(crowdsale.withdrawRemainingTokens(owner.address)).to.be.rejectedWith("The remaining tokens are only transferrable after the sale is over" );
-
-    //     await network.provider.send("evm_increaseTime", [240])
-    //     await expect( crowdsale.withdrawRemainingTokens(owner.address)).to.be.fulfilled;
-
-    // })
+    })
 
 
 });

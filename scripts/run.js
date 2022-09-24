@@ -13,6 +13,7 @@ const main = async () => {
 
     await CrowdSale.setTokenAddress(Token.address);
     await Token.approveContract(CrowdSale.address);
+    await CrowdSale.setStart();
 
   
     console.log("Token Address ", Token.address);

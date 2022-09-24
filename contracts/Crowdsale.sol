@@ -89,5 +89,9 @@ contract Crowdsale {
           revert ("Sale is closed");
         }     
     }
+
+    receive()external payable{
+        buyToken();
+    }
    
 }
