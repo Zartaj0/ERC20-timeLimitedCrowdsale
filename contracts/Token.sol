@@ -33,8 +33,8 @@ contract Token is IERC20  {
         maximumSupply = 10000000 * 10**18;
         owner= msg.sender;
             
-        balances[address(this)] = maximumSupply;
-        emit Transfer(address(0), address(this), maximumSupply);
+        balances[owner] = maximumSupply;
+        emit Transfer(address(0), owner, maximumSupply);
     }
 
     //Modifiers
@@ -95,13 +95,6 @@ contract Token is IERC20  {
     function approve(address spender, uint tokens) public checkBlacklist(msg.sender) override returns (bool success)  {
         allowed[msg.sender][spender] = tokens ;
         emit Approval(msg.sender, spender, tokens);
-        return true;
-    }
-
-    
-    function approveContract(address spender) public ownable   returns (bool success)  {
-        allowed[address(this)][spender] = maximumSupply;
-        emit Approval(msg.sender, spender, maximumSupply);
         return true;
     }
 

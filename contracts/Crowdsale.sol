@@ -41,7 +41,7 @@ contract Crowdsale {
     }
 
     function remainingTokens() public view returns (uint) {
-        return IERC20(Token).allowance(Token, address(this));
+        return IERC20(Token).balanceOf(address(this));
     }
 
     function setStart() external ownable {
@@ -54,17 +54,19 @@ contract Crowdsale {
    
     function transferFundsToOwner(address payable to) public ownable {
         require(presentTime()>end ,"The ethers are only tranferrable after the sale is over" );
-        to.transfer(address(this).balance);
+         (bool sent, ) = to.call{value:address(this).balance}("");
+
+        require(sent,"Transaction was not sucessful");
     }
 
     function withdrawRemainingTokens(address  to) public ownable  {
         require(presentTime()>end ,"The remaining tokens are only transferrable after the sale is over" );
-       IERC20(Token).transferFrom(Token, to, remainingTokens());     
+       IERC20(Token).transfer(to, remainingTokens());     
     }
 
     function sendToken (uint amount, address to) private {
         uint tokensToSend = (amount*10**18)/rate;
-       IERC20(Token).transferFrom(Token, to, tokensToSend);
+       IERC20(Token).transfer(to, tokensToSend);
        
     }
 
@@ -95,3 +97,4 @@ contract Crowdsale {
     }
    
 }
+

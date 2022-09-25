@@ -2,12 +2,8 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 let provider = ethers.getDefaultProvider();
 
-
 describe("Token contract", function () {
     let owner ;
-    let buyer ;
-    let buyer1 ;
-    let buyer2 ;
     let Token ;
     let token ;
     let Crowdsale ;
@@ -19,16 +15,43 @@ describe("Token contract", function () {
          token = await Token.deploy();
          Crowdsale = await ethers.getContractFactory("Crowdsale");
          crowdsale = await Crowdsale.deploy();
-         token.approveContract(crowdsale.address);
+
          crowdsale.setTokenAddress(token.address);
          crowdsale.setStart();
     })
+    it("Deployment should assign the total supply of tokens to owner", async function () {
 
-    it("Deployment should assign the total supply of tokens to itself", async function () {
-
-        const contractBalance = await token.balanceOf(token.address);
-        expect(await token.totalSupply()).to.equal(contractBalance);
+        const ownerBalance = await token.balanceOf(owner.address);
+        expect(await token.totalSupply()).to.equal(ownerBalance);
     });
+
+})    
+
+
+describe("Token contract", function () {
+    let owner ;
+    let buyer ;
+    let buyer1 ;
+    let buyer2 ;
+    let Token ;
+    let token ;
+    let Crowdsale ;
+    let crowdsale ;
+    let supply;
+
+    beforeEach(async function () {
+         [owner, buyer,buyer1,buyer2,] = await ethers.getSigners();
+         Token = await ethers.getContractFactory("Token");
+         token = await Token.deploy();
+         Crowdsale = await ethers.getContractFactory("Crowdsale");
+         crowdsale = await Crowdsale.deploy();
+         supply =token.totalSupply();
+         await token.transfer(crowdsale.address,supply);
+
+
+         crowdsale.setTokenAddress(token.address);
+         crowdsale.setStart();
+    })
 
     it("buyer can buy the token", async function () {
        

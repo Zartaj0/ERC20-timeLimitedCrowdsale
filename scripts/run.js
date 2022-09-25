@@ -4,20 +4,20 @@ const main = async () => {
     console.log("Deploying contracts with account: ", deployer.address);
   
     const tokenFactory = await hre.ethers.getContractFactory("Token");
-    const Token = await tokenFactory.deploy();
-    await Token.deployed();
+    const token = await tokenFactory.deploy();
+    await token.deployed();
 
-    const crowdSalealeFactory = await hre.ethers.getContractFactory("Crowdsale");
-    const CrowdSale = await crowdSalealeFactory.deploy();
-    await CrowdSale.deployed();
-
-    await CrowdSale.setTokenAddress(Token.address);
-    await Token.approveContract(CrowdSale.address);
-    await CrowdSale.setStart();
+    const crowdSaleFactory = await hre.ethers.getContractFactory("Crowdsale");
+    const crowdsale = await crowdSaleFactory.deploy();
+    await crowdsale.deployed();
+     
+    await token.transfer(crowdsale.address,token.totalSupply());
+    await crowdsale.setTokenAddress(token.address);
+    await crowdsale.setStart();
 
   
-    console.log("Token Address ", Token.address);
-    console.log("crowdsale Address ", CrowdSale.address);
+    console.log("Token Address ", token.address);
+    console.log("crowdsale Address ", crowdsale.address);
   };
   
   const runMain = async () => {
