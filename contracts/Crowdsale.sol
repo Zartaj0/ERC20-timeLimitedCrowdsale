@@ -15,13 +15,21 @@ interface  IERC20 {
 
 contract Crowdsale {
     address public owner;
-    uint public rate;
+    address public Token;
+    uint private rate;
     uint public start;
     uint public end;
     uint public endInvestor;
     uint public endPrivate ;
     uint public endPublic;
-    address public Token;
+    uint private saleLimit;
+    uint public investorSold;
+    uint public privateSold;
+    uint public publicSold;
+    uint private remainingLimit;
+    uint private userLimit = 10000 * 10 ** 18;
+
+    mapping(address => uint) public limit;
 
     constructor() {
       owner =msg.sender;
@@ -36,12 +44,24 @@ contract Crowdsale {
      Token = _addr;
     }
 
-     function presentTime() public view returns(uint){
+    function presentTime() public view returns(uint){
         return block.timestamp;
     }
 
-    function remainingTokens() public view returns (uint) {
+    function tokensRemaining() public view returns (uint) {
         return IERC20(Token).balanceOf(address(this));
+    }
+
+
+
+    function remainingInvestor() private view returns(uint){
+     return saleLimit - investorSold;
+    }
+    function remainingPrivate() private view returns(uint){
+     return saleLimit - privateSold;
+    }
+    function remainingPublic() private view returns(uint){
+     return saleLimit - publicSold;
     }
 
     function setStart() external ownable {
@@ -61,13 +81,22 @@ contract Crowdsale {
 
     function withdrawRemainingTokens(address  to) public ownable  {
         require(presentTime()>end ,"The remaining tokens are only transferrable after the sale is over" );
-       IERC20(Token).transfer(to, remainingTokens());     
+       IERC20(Token).transfer(to, tokensRemaining());     
     }
 
-    function sendToken (uint amount, address to) private {
+    function sendToken (uint amount, address to) private  {
         uint tokensToSend = (amount*10**18)/rate;
-       IERC20(Token).transfer(to, tokensToSend);
+        require(tokensToSend <= remainingLimit,"Sale limit reached wait for the next sale");
+
+        IERC20(Token).transfer(to, tokensToSend);
        
+           if (presentTime() <= endInvestor){
+            investorSold += tokensToSend;
+        }else if (presentTime() <= endPrivate){
+            privateSold += tokensToSend;
+        }else if (presentTime() <= endPublic){
+            publicSold += tokensToSend;
+        }         
     }
 
     function buyToken() public payable {
@@ -77,17 +106,23 @@ contract Crowdsale {
 
         } else if  (presentTime() <= endInvestor) {
            rate = 1e15;
+           saleLimit = 4000 * 10**18;
+           remainingLimit = remainingInvestor();
            sendToken(msg.value, msg.sender);
 
         } else if (presentTime() <= endPrivate) {
-           rate = 2e15;  
+           rate = 2e15;
+           saleLimit = 3000 * 10**18;
+           remainingLimit = remainingPrivate();
            sendToken(msg.value, msg.sender);
 
         } else if (presentTime() <= endPublic) {
             rate = 5e15;
+           saleLimit = 3000 * 10**18;
+           remainingLimit = remainingPublic();
            sendToken(msg.value, msg.sender);
 
-       } else {
+        } else {
           revert ("Sale is closed");
         }     
     }
