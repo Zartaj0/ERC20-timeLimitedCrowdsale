@@ -87,10 +87,12 @@ contract Crowdsale {
     function sendToken (uint amount, address to) private  {
         uint tokensToSend = (amount*10**18)/rate;
         require(tokensToSend <= remainingLimit,"Sale limit reached wait for the next sale");
+        require(userLimit - limit[to]>= tokensToSend ,"Max. userLimit reached");
 
         IERC20(Token).transfer(to, tokensToSend);
+        limit[to] += tokensToSend;
        
-           if (presentTime() <= endInvestor){
+        if (presentTime() <= endInvestor){
             investorSold += tokensToSend;
         }else if (presentTime() <= endPrivate){
             privateSold += tokensToSend;
@@ -106,19 +108,19 @@ contract Crowdsale {
 
         } else if  (presentTime() <= endInvestor) {
            rate = 1e15;
-           saleLimit = 4000 * 10**18;
+           saleLimit = 10000 * 10**18;
            remainingLimit = remainingInvestor();
            sendToken(msg.value, msg.sender);
 
         } else if (presentTime() <= endPrivate) {
            rate = 2e15;
-           saleLimit = 3000 * 10**18;
+           saleLimit = 11000 * 10**18;
            remainingLimit = remainingPrivate();
            sendToken(msg.value, msg.sender);
 
         } else if (presentTime() <= endPublic) {
             rate = 5e15;
-           saleLimit = 3000 * 10**18;
+           saleLimit = 12000 * 10**18;
            remainingLimit = remainingPublic();
            sendToken(msg.value, msg.sender);
 

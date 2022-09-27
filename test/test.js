@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { FeedbackSummaryInstance } = require("twilio/lib/rest/api/v2010/account/call/feedbackSummary");
 let provider = ethers.getDefaultProvider();
 
 describe("Token contract", function () {
@@ -20,6 +21,9 @@ describe("Token contract", function () {
     let buyer ;
     let buyer1 ;
     let buyer2 ;
+    let buyer3;
+    let buyer4;
+    let buyer5;
     let Token ;
     let token ;
     let Crowdsale ;
@@ -27,7 +31,7 @@ describe("Token contract", function () {
     let supply;
 
     beforeEach(async function () {
-         [owner, buyer,buyer1,buyer2,] = await ethers.getSigners();
+         [owner, buyer,buyer1,buyer2,buyer3,buyer4,buyer5] = await ethers.getSigners();
          Token = await ethers.getContractFactory("Token");
          token = await Token.deploy();
          Crowdsale = await ethers.getContractFactory("Crowdsale");
@@ -106,23 +110,46 @@ describe("Token contract", function () {
     })
 
     it("saleLimit shouldn't be exceeded", async function () {
-        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("4") })).to.be.fulfilled;
-        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") })).to.be.reverted;
+        await expect( crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("10") })).to.be.fulfilled;
+        await expect(crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("2") })).to.be.reverted;
 
         await network.provider.send("evm_increaseTime", [240]);
 
-        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("6") })).to.be.fulfilled;
-        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") })).to.be.reverted;
+        await expect( crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("20") })).to.be.fulfilled;
+        await expect(crowdsale.connect(buyer3).buyToken({ value: ethers.utils.parseEther("4") })).to.be.reverted;
 
         await network.provider.send("evm_increaseTime", [240]);
 
-        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("15") })).to.be.fulfilled;
-        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") })).to.be.reverted;
-
-        
-        
+        await expect( crowdsale.connect(buyer4).buyToken({ value: ethers.utils.parseEther("50") })).to.be.fulfilled;
+        await expect(crowdsale.connect(buyer5).buyToken({ value: ethers.utils.parseEther("11") })).to.be.reverted;        
 
     })
+
+    it("user shouldn't be able to buy tokens more than limit",async function(){
+
+        await expect( crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("10") })).to.be.fulfilled;
+        await expect(crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("2") })).to.be.reverted;
+
+        await network.provider.send("evm_increaseTime", [240]);
+
+
+        await expect( crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("20") })).to.be.fulfilled;
+        await expect(crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("3") })).to.be.reverted;
+
+        await network.provider.send("evm_increaseTime", [240]);
+
+
+        await expect( crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("10") })).to.be.reverted;
+        await expect(crowdsale.connect(buyer1).buyToken({ value: ethers.utils.parseEther("2") })).to.be.reverted;
+
+
+
+
+    })
+
+   
+
+
 
 
 });
