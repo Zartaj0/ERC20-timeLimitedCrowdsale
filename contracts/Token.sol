@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+/// @title Interface for the ERC20 token
+/// @author Zartaj Afser
+/// @notice This is the standard interface for an ERC20 token
+
 pragma solidity ^0.8.16;
 
 interface  IERC20 {
@@ -14,8 +18,15 @@ interface  IERC20 {
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 }
 
+/// @title ERC20 token contract using the ERC20 interface
+/// @author Zartaj Afser
+/// @notice A basic token contract which implements the basic functionalities of an ERC20 token
+/**@dev The tokens from this contract will be transferred to another crowdsale contract and from there 
+ * we will use the interface of the token contract for selling tokens 
+ */
+
 contract Token is IERC20  {
-    
+
     address public  owner;
     string public name;
     string public symbol;
@@ -26,6 +37,8 @@ contract Token is IERC20  {
     mapping(address => mapping(address => uint)) private  allowed;
     mapping(address => bool) public blacklist;
 
+
+/// @dev Total supply is 10 Million and the tokens are being credit to the owner's address
     constructor()  {
         name = "Test";
         symbol = "TST";
@@ -37,7 +50,7 @@ contract Token is IERC20  {
         emit Transfer(address(0), owner, maximumSupply);
     }
 
-    //Modifiers
+
     
     modifier ownable()  {
         require (msg.sender== owner,"Only owner can perform this action");

@@ -12,8 +12,10 @@ interface  IERC20 {
     event Transfer(address indexed from, address indexed to, uint tokens);
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 }
+///@dev We will send the tokens from the ERC20 token contract to this crowdsale contract.. 
 
 contract Crowdsale {
+
     address public owner;
     address public Token;
     uint private rate;
@@ -29,6 +31,9 @@ contract Crowdsale {
     uint private remainingLimit;
     uint private userLimit = 10000 * 10 ** 18;
 
+/** @dev this mapping keeps a track of all address about 
+ * the amount of tokens they bought so that we can limit them
+*/
     mapping(address => uint) public limit;
 
     constructor() {
@@ -40,10 +45,12 @@ contract Crowdsale {
         _;
     }
 
+/// @dev assigns the ERC20 token address to the Token variable
     function setTokenAddress(address _addr) external ownable{
      Token = _addr;
     }
 
+//  returns  the present time
     function presentTime() public view returns(uint){
         return block.timestamp;
     }
@@ -52,8 +59,10 @@ contract Crowdsale {
         return IERC20(Token).balanceOf(address(this));
     }
 
-
-
+/**@dev these functions give the remaining limits for the different sales by substracting the sold tokens
+ * form the given limit according to the time.
+ */
+  
     function remainingInvestor() private view returns(uint){
      return saleLimit - investorSold;
     }
@@ -84,6 +93,13 @@ contract Crowdsale {
        IERC20(Token).transfer(to, tokensRemaining());     
     }
 
+
+/**@dev firstly we are calculating the tokens to be sold on the given amount 
+ * the require statements check the limits. 
+ * Then we are sending the tokens to buyer by calling the transfer function using interface of ERC20 token contrat.
+ * After that limit mapping gets the value for that particular address.
+ * Now according to time the value of respective variables for different sales gets increased.
+ */
     function sendToken (uint amount, address to) private  {
         uint tokensToSend = (amount*10**18)/rate;
         require(tokensToSend <= remainingLimit,"Sale limit reached wait for the next sale");
@@ -100,7 +116,7 @@ contract Crowdsale {
             publicSold += tokensToSend;
         }         
     }
-
+    
     function buyToken() public payable {
 
         if (start==0){
