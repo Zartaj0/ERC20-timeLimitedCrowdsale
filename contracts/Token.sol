@@ -71,20 +71,20 @@ contract Token is IERC20  {
    
     //Total Supply
     
-    function totalSupply() external  override view returns (uint) {
+    function totalSupply() external   view returns (uint) {
         return maximumSupply ;
     }
      
 
     //Token balance of any address 
 
-    function balanceOf(address tokenOwner) public override view returns (uint balance) {
+    function balanceOf(address tokenOwner) public  view returns (uint balance) {
         return balances[tokenOwner];
     }
 
     //Check Allowance
 
-    function allowance(address tokenOwner, address spender) public override view returns (uint remaining) {
+    function allowance(address tokenOwner, address spender) public  view returns (uint remaining) {
         return allowed[tokenOwner][spender];
     }
 
@@ -105,7 +105,7 @@ contract Token is IERC20  {
     
    //approve Function
 
-    function approve(address spender, uint tokens) public checkBlacklist(msg.sender) override returns (bool success)  {
+    function approve(address spender, uint tokens) public checkBlacklist(msg.sender)  returns (bool success)  {
         allowed[msg.sender][spender] = tokens ;
         emit Approval(msg.sender, spender, tokens);
         return true;
@@ -113,7 +113,7 @@ contract Token is IERC20  {
 
     //transfer Function
 
-    function transfer(address to, uint tokens) public checkBlacklist(msg.sender) checkBalance(msg.sender,tokens) checkBlacklist(to)  override returns (bool success) {
+    function transfer(address to, uint tokens) public checkBlacklist(msg.sender) checkBalance(msg.sender,tokens) checkBlacklist(to)   returns (bool success) {
         balances[msg.sender] = (balances[msg.sender] -= tokens);
         balances[to] = (balances[to] += tokens);
         emit Transfer(msg.sender, to, tokens);
@@ -122,7 +122,7 @@ contract Token is IERC20  {
     
     //transferFrom Function
 
-    function transferFrom(address from, address to, uint tokens) public checkBlacklist(msg.sender)checkBalance(from,tokens) checkBlacklist(to) override returns (bool success) {
+    function transferFrom(address from, address to, uint tokens) public checkBlacklist(msg.sender)checkBalance(from,tokens) checkBlacklist(to)  returns (bool success) {
         require(allowed[from][msg.sender] >=tokens , "You are not approved to send tokens");
         balances[from] = (balances[from] -= tokens);
         allowed[from][msg.sender] = (allowed[from][msg.sender] -= tokens );

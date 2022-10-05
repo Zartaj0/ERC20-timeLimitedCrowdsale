@@ -119,10 +119,9 @@ contract Crowdsale {
     
     function buyToken() public payable {
 
-        if (start==0){
-          revert("Sale Has not started yet");
-
-        } else if  (presentTime() <= endInvestor) {
+        require(start==0,"Sale Has not started yet");
+        
+        if  (presentTime() <= endInvestor) {
            rate = 1e15;
            saleLimit = 10000 * 10**18;
            remainingLimit = remainingInvestor();
