@@ -100,44 +100,42 @@ contract Crowdsale {
  * After that limit mapping gets the value for that particular address.
  * Now according to time the value of respective variables for different sales gets increased.
  */
-    function sendToken (uint amount, address to) private  {
-        uint tokensToSend = (amount*10**18)/rate;
+    function sendToken (uint tokensToSend, address to) private  {
         require(tokensToSend <= remainingLimit,"Sale limit reached wait for the next sale");
         require(userLimit - limit[to]>= tokensToSend ,"Max. userLimit reached");
 
         IERC20(Token).transfer(to, tokensToSend);
         limit[to] += tokensToSend;
-       
-        if (presentTime() <= endInvestor){
-            investorSold += tokensToSend;
-        }else if (presentTime() <= endPrivate){
-            privateSold += tokensToSend;
-        }else if (presentTime() <= endPublic){
-            publicSold += tokensToSend;
-        }         
+               
     }
     
     function buyToken() public payable {
 
-        require(start==0,"Sale Has not started yet");
+        require(start!=0,"Sale Has not started yet");
         
         if  (presentTime() <= endInvestor) {
            rate = 1e15;
+           uint tokensToSend = (msg.value*10**18)/rate;
            saleLimit = 10000 * 10**18;
            remainingLimit = remainingInvestor();
-           sendToken(msg.value, msg.sender);
+           sendToken(tokensToSend, msg.sender);
+           investorSold += tokensToSend;
 
         } else if (presentTime() <= endPrivate) {
            rate = 2e15;
+           uint tokensToSend = (msg.value*10**18)/rate;
            saleLimit = 11000 * 10**18;
            remainingLimit = remainingPrivate();
-           sendToken(msg.value, msg.sender);
+           sendToken(tokensToSend, msg.sender);
+           privateSold += tokensToSend;
 
         } else if (presentTime() <= endPublic) {
-            rate = 5e15;
+           rate = 5e15;
+           uint tokensToSend = (msg.value*10**18)/rate;
            saleLimit = 12000 * 10**18;
            remainingLimit = remainingPublic();
-           sendToken(msg.value, msg.sender);
+           sendToken(tokensToSend, msg.sender);
+           publicSold += tokensToSend;
 
         } else {
           revert ("Sale is closed");
