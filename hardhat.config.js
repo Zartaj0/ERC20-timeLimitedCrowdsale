@@ -17,9 +17,20 @@ module.exports = {
       url: process.env.ROPSTEN_INFURA_API,
       accounts: [process.env.PRIVATE_KEY],
       timeout:60000
+    },
+    mumbai: {
+      // This value will be replaced on runtime
+      url: process.env.ALCHEMY_KEY_POLYGON,
+      accounts: [process.env.PRIVATE_KEY],
+      timeout:60000
     }
   },
   gasReporter:{
     enabled:true
+  },
+  etherscan: {
+    apiKey: {
+      polygonMumbai: process.env.POLYGON_API
+    }
   }
 };

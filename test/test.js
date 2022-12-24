@@ -1,10 +1,9 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { FeedbackSummaryInstance } = require("twilio/lib/rest/api/v2010/account/call/feedbackSummary");
 let provider = ethers.getDefaultProvider();
 
 describe("Token contract", function () {
-   
+
     it("Deployment should assign the total supply of tokens to owner", async function () {
         [owner] = await ethers.getSigners();
         let Token = await ethers.getContractFactory("Token");
@@ -13,7 +12,7 @@ describe("Token contract", function () {
         expect(await token.totalSupply()).to.equal(ownerBalance);
     });
 
-})    
+})
 
 
 describe("Token contract", function () {
@@ -45,7 +44,7 @@ describe("Token contract", function () {
     })
 
     it("buyer can buy the token", async function () {
-       
+
         await crowdsale.connect(buyer).buyToken({ value: ethers.utils.parseEther("1") })
         expect(await token.balanceOf(buyer.address)).to.equal("1000000000000000000000")
     })
@@ -64,7 +63,7 @@ describe("Token contract", function () {
         expect(await token.balanceOf(buyer2.address)).to.equal("200000000000000000000");
 
         await network.provider.send("evm_increaseTime", [240])
-        
+
         await expect(crowdsale.connect(buyer2).buyToken({ value: ethers.utils.parseEther("1")})).to.eventually.be.rejected;
 
     })
@@ -121,7 +120,7 @@ describe("Token contract", function () {
         await network.provider.send("evm_increaseTime", [240]);
 
         await expect( crowdsale.connect(buyer4).buyToken({ value: ethers.utils.parseEther("50") })).to.be.fulfilled;
-        await expect(crowdsale.connect(buyer5).buyToken({ value: ethers.utils.parseEther("11") })).to.be.reverted;        
+        await expect(crowdsale.connect(buyer5).buyToken({ value: ethers.utils.parseEther("11") })).to.be.reverted;
 
     })
 
@@ -147,7 +146,7 @@ describe("Token contract", function () {
 
     })
 
-   
+
 
 
 
